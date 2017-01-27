@@ -1,6 +1,8 @@
 {
-  "SPOTIFY_USERNAME":"Spotify username",
-  "SPOTIFY_PASSWORD":"Spotify password",
+  "MQTT_HOST":"MQTT broker hostname",
+  "MQTT_USERNAME":"MQTT broker username",
+  "MQTT_PASSWORD":"MQTT broker password",
+  "MQTT_PORT":"MQTT broker port",
   "HIGH_BITRATE":"High quality",
   "SEARCH_RESULTS":"Number of results",
   "PLUGINS":"Last.fm",
@@ -9,8 +11,8 @@
   "SEARCH_SONGS_SECTION":"Spotify songs",
   "SEARCH_ALBUMS_SECTION":"Spotity albums",
   "SEARCH_ARTISTS_SECTION":"Spotify artists",
-  "SPOTIFY_CONFIGURATION":"Spotify Configuration",
-  "SPOTIFY_ACCOUNT":"Spotify account",
+  "MQTT_CONFIGURATION":"Spotify Configuration",
+  "MQTT_ACCOUNT":"MQTT Broker account",
   "SAVE":"Save"
 
 }

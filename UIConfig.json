@@ -6,9 +6,9 @@
    {
       "id": "section_account",
       "element": "section",
-      "label": "TRANSLATE.SPOTIFY_ACCOUNT",
+      "label": "TRANSLATE.MQTT_ACCOUNT",
       "icon": "fa-plug",
-      "onSave": {"type":"controller", "endpoint":"music_service/spop", "method":"saveSpotifyAccount"},
+      "onSave": {"type":"controller", "endpoint":"user_interface/alexa", "method":"saveMQTTAccount"},
       "saveButton": {
         "label": "TRANSLATE.SAVE",
         "data": [
@@ -18,28 +18,37 @@
         ]
       },
       "content": [
-        {
+       {
+          "id": "host",
+          "type":"text",
+          "element": "input",
+          "doc": "This is the hostname of your MQTT account",
+          "label": "TRANSLATE.MQTT_HOST",
+          "value": "mqtt://m20.cloudmqtt.com"
+       },
+       {
+          "id": "port",
+          "type":"integer",
+          "element": "input",
+          "doc": "This is the port of your MQTT account",
+          "label": "TRANSLATE.MQTT_PORT",
+          "value": ""
+       },
+       {
           "id": "username",
           "type":"text",
           "element": "input",
-          "doc": "This is the username of your Spotify account",
-          "label": "TRANSLATE.SPOTIFY_USERNAME",
+          "doc": "This is the username of your MQTT account",
+          "label": "TRANSLATE.MQTT_USERNAME",
           "value": ""
         },
         {
           "id": "password",
           "type":"password",
           "element": "input",
-          "doc": "This is the password of your Spotify account",
-          "label": "TRANSLATE.SPOTIFY_PASSWORD",
+          "doc": "This is the password of your MQTT account",
+          "label": "TRANSLATE.MQTT_PASSWORD",
           "value": ""
-        },
-        {
-          "id":"bitrate",
-          "element": "switch",
-          "doc": "High bitrate",
-          "label": "TRANSLATE.HIGH_BITRATE",
-          "value": true
         }
       ]
    }

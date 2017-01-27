@@ -13,12 +13,13 @@ var nconf = require('nconf');
 var path = require('path');
 var startup = nconf.argv();
 
-var configFile = path.resolve( startup.get('conf') || '/usr/local/etc/alexa-mqtt-proxy.json' );
+var configFile = path.resolve( startup.get('conf') || '/data/plugins/user-interface/alexa/config.json' );
 nconf.argv().file({ file: configFile })
+
 nconf.defaults({
   "secure":"false",
-  "user":"oewmlizv",
-  "pass":"VwO-mIaRmDXJ",
+  "username":"oewmlizv",
+  "password":"VwO-mIaRmDXJ",
   "host":"m20.cloudmqtt.com",
   "port":"13451",
   "cid":"clientid",
@@ -26,12 +27,7 @@ nconf.defaults({
   "pubtopic":"/alexa"
 })
 
-var options = {
-  port: 13451,
-  clientId: 'mqttjs_' + Math.random().toString(16).substr(2, 8),
-  username: "oewmlizv",
-  password: "VwO-mIaRmDXJ",
-};
+
 
 
 var syslogMsg ="";
@@ -49,6 +45,8 @@ function ControllerAlexa(context) {
 	this.logger = this.context.logger;
 	this.configManager = this.context.configManager;
 
+	self.logger.info('alexa: updating fixed variable for later deeper scopes');
+
 }
 
 ControllerAlexa.prototype.onVolumioStart = function()
@@ -59,6 +57,12 @@ ControllerAlexa.prototype.onVolumioStart = function()
 	this.config.loadFile(configFile);
 	self.samplerate="128Kbps";
 
+	self.logger.info('alexa: config username : '  + self.config.get('username'));
+	self.logger.info('alexa: config mqtt host : '  + self.config.get('host'));
+
+
+	var publish_topic = nconf.get('pubtopic');
+	var subscribe_topic = nconf.get('subtopic');
 
 
 	if (nconf.get('secure') == 'true') {
@@ -68,18 +72,22 @@ ControllerAlexa.prototype.onVolumioStart = function()
 	  var connectstring = 'mqtt://';
 	}
 
-	connectstring = connectstring + nconf.get('user') + ':' + nconf.get('pass') + '@' + nconf.get('host') + ':' + nconf.get('port') + '?clientId=' + nconf.get('cid');
+	connectstring = connectstring +  self.config.get('username') + ':' + self.config.get('password') + '@' +self.config.get('host') + ':' +self.config.get('username') + '?clientId=' + nconf.get('cid');
 	var url = "mqtt://m20.cloudmqtt.com";
 
 	self.logger.info('publishing to topic: ' +publish_topic);
 	console.log('debug','publishing to topic: ' +publish_topic);
-	console.log('publishing to topic: ' +publish_topic);
+	console.log('publishing to topic: ' + publish_topic);
+
+	var options = {
+	  port: self.config.get('port'),
+	  clientId: 'mqttjs_' + Math.random().toString(16).substr(2, 8),
+	  username: self.config.get('username') ,
+	  password: self.config.get('password') ,
+	};
 
 	var client = mqtt.connect(url,options);
 	console.log('debug','Connecting with: ' + connectstring);
-
-	var publish_topic = nconf.get('pubtopic');
-	var subscribe_topic = nconf.get('subtopic');
 
 
 	client.on('connect', function () {
@@ -94,20 +102,25 @@ ControllerAlexa.prototype.onVolumioStart = function()
 
 	client.on('message', function(topic, message) {
 	  console.log('message received: %s', message);
-	  self.logger.info('message received: %s', message);
+	  self.logger.info('alexa: message received: %s', message);
+
+	  self.commandRouter = self.context.coreCommand;		
 
 	  var req = JSON.parse(message);
 		if(req.request.intent)
 		{
 		  var name = req.request.intent.name;
-		  console.log('--> %s',name);
+		  
+		  self.logger.info('alexa: parsed %s',name);
 		  switch(name)
 		  {
 			case "Play":
-				self.logger.info('->next');
+				self.logger.info('alexa: activated ->Play');
+				this.commandRouter.VolumioPlay()
 				break;
 			case "Stop":
-				self.logger.info('->pause');
+				self.logger.info('alexa: activated ->Stop');
+				//self.commandRouter.VolumioStop()
 				break;
 			case "Pause":
 				self.logger.info('->pause');
@@ -1086,10 +1099,11 @@ ControllerAlexa.prototype.getUIConfig = function() {
 		__dirname + '/UIConfig.json')
 		.then(function(uiconf)
 		{
-
-			uiconf.sections[0].content[0].value = self.config.get('username');
-			uiconf.sections[0].content[1].value = self.config.get('password');
-			uiconf.sections[0].content[2].value = self.config.get('bitrate');
+			uiconf.sections[0].content[0].value = self.config.get('host');
+			uiconf.sections[0].content[1].value = self.config.get('port');
+			uiconf.sections[0].content[2].value = self.config.get('username');
+			uiconf.sections[0].content[3].value = self.config.get('password');
+			//uiconf.sections[0].content[4].value = self.config.get('bitrate');
 
 			defer.resolve(uiconf);
 		})
@@ -1699,16 +1713,19 @@ ControllerAlexa.prototype.createSPOPDFile = function () {
 			}
 			var outdev = self.commandRouter.sharedVars.get('alsa.outputdevice');
 			var hwdev = 'hw:' + outdev;
+/*
 			var  bitrate = self.config.get('bitrate');
 			var bitratevalue = 'true';
 			if (bitrate == false ) {
 				bitratevalue = 'false';
 			}
-
+*/
 			var conf1 = data.replace("${username}", self.config.get('username'));
 			var conf2 = conf1.replace("${password}", self.config.get('password'));
-			var conf3 = conf2.replace("${bitrate}", self.config.get('bitrate'));
+			//var conf3 = conf2.replace("${bitrate}", self.config.get('bitrate'));
 			var conf4 = conf3.replace("${outdev}", hwdev);
+			var conf3 = conf2.replace("${port}", self.config.get('port'));
+			var conf3 = conf2.replace("${host}", self.config.get('host'));
 
 			fs.writeFile("/etc/spopd.conf", conf4, 'utf8', function (err) {
 				if (err)
@@ -1730,14 +1747,16 @@ ControllerAlexa.prototype.createSPOPDFile = function () {
 
 };
 
-ControllerAlexa.prototype.saveSpotifyAccount = function (data) {
+ControllerAlexa.prototype.saveMQTTAccount = function (data) {
 	var self = this;
 
 	var defer = libQ.defer();
 
+	self.config.set('host', data['host']);
+	self.config.set('port', data['port']);
 	self.config.set('username', data['username']);
 	self.config.set('password', data['password']);
-	self.config.set('bitrate', data['bitrate']);
+//	self.config.set('bitrate', data['bitrate']);
 
 	self.rebuildSPOPDAndRestartDaemon()
 		.then(function(e){
