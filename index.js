@@ -110,20 +110,42 @@ ControllerAlexa.prototype.onVolumioStart = function()
 		if(req.request.intent)
 		{
 		  var name = req.request.intent.name;
+		  var value = req.request.intent.slots.MusicAlbum.value;
 		  
-		  self.logger.info('alexa: parsed %s',name);
+		  self.logger.info('alexa: parsed %s, val %s',name, value);
 		  switch(name)
 		  {
 			case "Play":
 				self.logger.info('alexa: activated ->Play');
-				this.commandRouter.VolumioPlay()
+				if (value == undefined)
+				{
+					self.commandRouter.volumioPlay.bind(self.commandRouter);
+					self.commandRouter.volumioPlay();
+				}
+				else
+				{
+					var returnedData = self.commandRouter.musicLibrary.search(value);
+					self.logger.info('alexa: returnedData %s',returnedData);				
+					returnedData.then(function (result) {
+						self.logger.info('alexa: musicLibrary.search %s', result);
+					});
+					
+				}				
 				break;
 			case "Stop":
 				self.logger.info('alexa: activated ->Stop');
-				//self.commandRouter.VolumioStop()
+				self.commandRouter.volumioStop.bind(self.commandRouter);
+				self.commandRouter.volumioStop();
 				break;
 			case "Pause":
 				self.logger.info('->pause');
+				self.commandRouter.volumioPause.bind(self.commandRouter);
+				self.commandRouter.volumioPause();
+				break;
+			case "ListPlaylists":
+				self.logger.info('->list playlists');
+				self.commandRouter.volumioPause.bind(self.commandRouter);
+				self.commandRouter.volumioPause();
 				break;
 		  }
 		}
