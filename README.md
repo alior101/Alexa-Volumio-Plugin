@@ -1,5 +1,7 @@
 # Alexa-Volumio-Plugin
+
 instructions to add the plugin in manual mode:
+
 1. put the files in /data/plugins/user-interface/alexa/
 
 2. update /data/configuration/plugins.json with the alexa entry
