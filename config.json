@@ -1,0 +1,18 @@
+{
+  "enabled": {
+    "type": "boolean",
+    "value": false
+  },
+  "username": {
+      "type": "string",
+      "value": ""
+  },
+  "password": {
+    "type": "string",
+    "value": ""
+  },
+  "mqtt_hostname": {
+    "type": "string",
+    "value": "mqtt://m20.cloudmqtt.com"
+  }
+}
