@@ -101,51 +101,72 @@ ControllerAlexa.prototype.onVolumioStart = function()
 	})
 
 	client.on('message', function(topic, message) {
-	  console.log('message received: %s', message);
+	  //console.log('message received: %s', message);
 	  self.logger.info('alexa: message received: %s', message);
 
 	  self.commandRouter = self.context.coreCommand;		
 
 	  var req = JSON.parse(message);
-		if(req.request.intent)
+		if(req.request.type == "LaunchRequest")
+		{
+			client.publish('/volumio','Hi Master, Your wishes are my command');
+		}
+		else if(req.request.intent)
 		{
 		  var name = req.request.intent.name;
-		  var value = req.request.intent.slots.MusicAlbum.value;
+
 		  
-		  self.logger.info('alexa: parsed %s, val %s',name, value);
 		  switch(name)
-		  {
+		  { 
+			case "Search":
+/*
+				var value1 = req.request.intent.slots.MusicAlbum.value;
+				var value2 = req.request.intent.slots.MusicGroup.value;
+				var value3 = req.request.intent.slots.Musician.value;
+				var returnedData = self.commandRouter.musicLibrary.search(value2);
+		  		self.logger.info('alexa: parsed %s, val %s,%s,%s',name, value1,value2,value3);
+				self.logger.info('alexa: returnedData %s',returnedData);				
+				returnedData.then(function (result) {
+					self.logger.info('alexa: musicLibrary.search %s', result);
+				});					
+*/
+				break;
 			case "Play":
 				self.logger.info('alexa: activated ->Play');
-				if (value == undefined)
-				{
-					self.commandRouter.volumioPlay.bind(self.commandRouter);
-					self.commandRouter.volumioPlay();
-				}
-				else
-				{
-					var returnedData = self.commandRouter.musicLibrary.search(value);
-					self.logger.info('alexa: returnedData %s',returnedData);				
-					returnedData.then(function (result) {
-						self.logger.info('alexa: musicLibrary.search %s', result);
-					});
-					
-				}				
+				self.commandRouter.volumioPlay.bind(self.commandRouter);
+				self.commandRouter.volumioPlay();
+				client.publish('/volumio','OK');
 				break;
 			case "Stop":
 				self.logger.info('alexa: activated ->Stop');
 				self.commandRouter.volumioStop.bind(self.commandRouter);
 				self.commandRouter.volumioStop();
+				client.publish('/volumio','OK');
 				break;
 			case "Pause":
 				self.logger.info('->pause');
 				self.commandRouter.volumioPause.bind(self.commandRouter);
 				self.commandRouter.volumioPause();
+				client.publish('/volumio','OK');
 				break;
 			case "ListPlaylists":
 				self.logger.info('->list playlists');
-				self.commandRouter.volumioPause.bind(self.commandRouter);
-				self.commandRouter.volumioPause();
+				
+				var returnedData = self.commandRouter.playListManager.listPlaylist();
+				returnedData.then(function (data) {
+					self.logger.info('alexa: playlist: ', data);
+					client.publish('/volumio','Existing playlist: ' + data);
+				});
+				break;
+			case "SetPlaylists":
+				self.logger.info('->set playlists');
+				var playlist = req.request.intent.slots.Playlist.value;
+				var returnedData = self.commandRouter.playPlaylist(playlist);
+
+				returnedData.then(function (data) {
+					self.logger.info('alexa: set playlist to : ', playlist);
+					client.publish('/volumio','OK, Set playlist to ' + playlist);
+				});
 				break;
 		  }
 		}
