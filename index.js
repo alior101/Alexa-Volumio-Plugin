@@ -161,12 +161,28 @@ ControllerAlexa.prototype.onVolumioStart = function()
 			case "SetPlaylists":
 				self.logger.info('->set playlists');
 				var playlist = req.request.intent.slots.Playlist.value;
-				var returnedData = self.commandRouter.playPlaylist(playlist);
+				//var returnedData = self.commandRouter.playPlaylist(playlist);
 
+				var returnedData = self.commandRouter.playListManager.listPlaylist();
 				returnedData.then(function (data) {
-					self.logger.info('alexa: set playlist to : ', playlist);
-					client.publish('/volumio','OK, Set playlist to ' + playlist);
+					debugger;
+					var data_up = data.map(function(x){ return x.toUpperCase() })
+					if (data_up.indexOf(playlist.toUpperCase() ) > -1) 
+					{
+						//In the array!
+						self.logger.info('alexa: set playlist to : ', playlist);
+						client.publish('/volumio','OK, setting playlist to ' + playlist);
+					} 
+					else 
+					{
+						//Not in the array
+						returnedData.then(function (data) {
+							self.logger.info('alexa: unknown playlist %s', playlist);
+							client.publish('/volumio','Sorry, This playlist does not exist');
+						});
+					}
 				});
+
 				break;
 		  }
 		}
