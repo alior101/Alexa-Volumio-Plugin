@@ -12,7 +12,11 @@ var mqtt = require('mqtt');
 var nconf = require('nconf');
 var path = require('path');
 var startup = nconf.argv();
+var io=require('socket.io-client');
 
+var socket= io.connect('http://localhost:3000');
+
+/*
 var configFile = path.resolve( startup.get('conf') || '/data/plugins/user-interface/alexa/config.json' );
 nconf.argv().file({ file: configFile })
 
@@ -27,7 +31,7 @@ nconf.defaults({
   "pubtopic":"/alexa"
 })
 
-
+*/
 
 
 var syslogMsg ="";
@@ -49,6 +53,11 @@ function ControllerAlexa(context) {
 
 }
 
+ControllerAlexa.prototype.init_mqtt = function()
+{
+	var self = this;
+
+}
 ControllerAlexa.prototype.onVolumioStart = function()
 {
 	var self = this;
@@ -60,6 +69,18 @@ ControllerAlexa.prototype.onVolumioStart = function()
 	self.logger.info('alexa: config username : '  + self.config.get('username'));
 	self.logger.info('alexa: config mqtt host : '  + self.config.get('host'));
 
+	//nconf.argv().file({ file: configFile })
+
+	nconf.defaults({
+	  "secure":"false",
+	  "username":"oewmlizv",
+	  "password":"VwO-mIaRmDXJ",
+	  "host":"m20.cloudmqtt.com",
+	  "port":"13451",
+	  "cid":"clientid",
+	  "subtopic":"/alexa",
+	  "pubtopic":"/alexa"
+	}) 
 
 	var publish_topic = nconf.get('pubtopic');
 	var subscribe_topic = nconf.get('subtopic');
@@ -79,6 +100,7 @@ ControllerAlexa.prototype.onVolumioStart = function()
 	console.log('debug','publishing to topic: ' +publish_topic);
 	console.log('publishing to topic: ' + publish_topic);
 
+	//this.init_mqtt();
 	var options = {
 	  port: self.config.get('port'),
 	  clientId: 'mqttjs_' + Math.random().toString(16).substr(2, 8),
@@ -86,9 +108,16 @@ ControllerAlexa.prototype.onVolumioStart = function()
 	  password: self.config.get('password') ,
 	};
 
+	console.log('connecting with URL ' + url);
+	self.logger.info('connecting with URL ' + url + ' - ' + connectstring);
+
 	var client = mqtt.connect(url,options);
 	console.log('debug','Connecting with: ' + connectstring);
 
+	client.on('error', function(){
+		console.log("ERROR")
+		client.end()
+	})
 
 	client.on('connect', function () {
 	  console.log('client connected! ');
@@ -137,6 +166,12 @@ ControllerAlexa.prototype.onVolumioStart = function()
 				self.commandRouter.volumioPlay();
 				client.publish('/volumio','OK');
 				break;
+			case "Next":
+				self.logger.info('alexa: activated ->Next');
+				self.commandRouter.volumioNext.bind(self.commandRouter);
+				self.commandRouter.volumioNext();
+				client.publish('/volumio','OK');
+				break;
 			case "Stop":
 				self.logger.info('alexa: activated ->Stop');
 				self.commandRouter.volumioStop.bind(self.commandRouter);
@@ -158,6 +193,16 @@ ControllerAlexa.prototype.onVolumioStart = function()
 					client.publish('/volumio','Existing playlist: ' + data);
 				});
 				break;
+			case "VolumeSet":
+				var value = req.request.intent.slots.Repeat.value;
+
+				self.logger.info('->volume up %s', value);
+
+				socket.emit('volume', Number(value));
+				
+				client.publish('/volumio','Updated volume to ' + value);	
+				break;
+
 			case "SetPlaylists":
 				self.logger.info('->set playlists');
 				var playlist = req.request.intent.slots.Playlist.value;
@@ -165,13 +210,17 @@ ControllerAlexa.prototype.onVolumioStart = function()
 
 				var returnedData = self.commandRouter.playListManager.listPlaylist();
 				returnedData.then(function (data) {
-					debugger;
+					
 					var data_up = data.map(function(x){ return x.toUpperCase() })
-					if (data_up.indexOf(playlist.toUpperCase() ) > -1) 
+					var found_index = data_up.indexOf(playlist.toUpperCase() );
+					if (found_index > -1) 
 					{
 						//In the array!
-						self.logger.info('alexa: set playlist to : ', playlist);
-						client.publish('/volumio','OK, setting playlist to ' + playlist);
+						self.logger.info('alexa: set playlist to : %s', data[found_index]);
+						//debugger;
+						var returnedData1 = self.commandRouter.playListManager.playPlaylist(data[found_index]);
+						self.logger.info('playListManager.playPlaylist:  %s ', returnedData1);
+						client.publish('/volumio','OK, setting playlist to; ' + data[found_index]);
 					} 
 					else 
 					{
@@ -188,7 +237,6 @@ ControllerAlexa.prototype.onVolumioStart = function()
 		}
 	});
 
-
 }
 
 ControllerAlexa.prototype.getConfigurationFiles = function()
@@ -197,7 +245,7 @@ ControllerAlexa.prototype.getConfigurationFiles = function()
 }
 
 ControllerAlexa.prototype.addToBrowseSources = function () {
-	var data = {name: 'Spotify', uri: 'spotify',plugin_type:'music_service',plugin_name:'spop'};
+	var data = {name: 'Alexa', uri: 'alexa',plugin_type:'user_interface',plugin_name:'alexa'};
 	this.commandRouter.volumioAddToBrowseSources(data);
 };
 
@@ -399,10 +447,9 @@ ControllerAlexa.prototype.onStart = function() {
 			defer.reject(new Error());
 		});
 */
-	this.commandRouter.sharedVars.registerCallback('alsa.outputdevice', this.rebuildSPOPDAndRestartDaemon.bind(this));
-
-	return defer.promise;
-};
+	//this.commandRouter.sharedVars.registerCallback('alsa.outputdevice', this.rebuildSPOPDAndRestartDaemon.bind(this));
+ 	defer.resolve();
+	return defer.promise;};
 
 
 ControllerAlexa.prototype.listPlaylists=function()
@@ -1765,28 +1812,21 @@ ControllerAlexa.prototype.createSPOPDFile = function () {
 
 	try {
 
-		fs.readFile(__dirname + "/spop.conf.tmpl", 'utf8', function (err, data) {
+		fs.readFile(__dirname + "/mqtt.conf.tmpl", 'utf8', function (err, data) {
 			if (err) {
 				defer.reject(new Error(err));
 				return console.log(err);
 			}
 			var outdev = self.commandRouter.sharedVars.get('alsa.outputdevice');
 			var hwdev = 'hw:' + outdev;
-/*
-			var  bitrate = self.config.get('bitrate');
-			var bitratevalue = 'true';
-			if (bitrate == false ) {
-				bitratevalue = 'false';
-			}
-*/
+
 			var conf1 = data.replace("${username}", self.config.get('username'));
 			var conf2 = conf1.replace("${password}", self.config.get('password'));
-			//var conf3 = conf2.replace("${bitrate}", self.config.get('bitrate'));
 			var conf4 = conf3.replace("${outdev}", hwdev);
 			var conf3 = conf2.replace("${port}", self.config.get('port'));
 			var conf3 = conf2.replace("${host}", self.config.get('host'));
 
-			fs.writeFile("/etc/spopd.conf", conf4, 'utf8', function (err) {
+			fs.writeFile("/etc/mqtt.conf", conf4, 'utf8', function (err) {
 				if (err)
 					defer.reject(new Error(err));
 				else defer.resolve();
@@ -1815,8 +1855,16 @@ ControllerAlexa.prototype.saveMQTTAccount = function (data) {
 	self.config.set('port', data['port']);
 	self.config.set('username', data['username']);
 	self.config.set('password', data['password']);
-//	self.config.set('bitrate', data['bitrate']);
 
+	self.logger.info("Saving configuration! %s, %s, %s, %s",data['host'], data['port'], data['username'], data['password']  );
+	self.commandRouter.pushToastMessage('success', "Configuration update", 'The configuration has been successfully updated, please Disable and Re-enable plugin to take effect.');
+
+	//var configFile=this.commandRouter.pluginManager.getConfigurationFile(this.context,'config.json');
+	//this.config.loadFile(configFile);
+
+	//self.onVolumioStart()
+	
+/*	
 	self.rebuildSPOPDAndRestartDaemon()
 		.then(function(e){
 			self.commandRouter.pushToastMessage('success', "Configuration update", 'The configuration has been successfully updated');
@@ -1826,7 +1874,7 @@ ControllerAlexa.prototype.saveMQTTAccount = function (data) {
 		{
 			defer.reject(new Error());
 		});
-
+*/	
 	return defer.promise;
 };
 
@@ -1839,20 +1887,24 @@ ControllerAlexa.prototype.rebuildSPOPDAndRestartDaemon = function () {
 		.then(function(e)
 		{
 			var edefer=libQ.defer();
+/*
 			exec("killall spopd", function (error, stdout, stderr) {
 				edefer.resolve();
 			});
+*/
 			return edefer.promise;
-		})
+		});
+/*
 		.then(self.startAlexaDaemon.bind(self))
 		.then(function(e)
-		{
+		{	
 			setTimeout(function () {
 				self.logger.info("Connecting to daemon");
 				self.spopDaemonConnect(defer);
 			}, 5000);
+			
 		});
-
+*/
 	return defer.promise;
 };
 
@@ -2016,4 +2068,44 @@ ControllerAlexa.prototype._searchTracks = function (results) {
 	}
 
 	return list;
+};
+
+
+
+// Receive player queue updates from commandRouter and broadcast to all connected clients
+ControllerAlexa.prototype.pushQueue = function(queue) {
+	var self = this;
+    self.logger.info('[' + Date.now() + '] ' + 'ControllerAlexa::pushQueue');
+/*
+	// pass queue to the helper
+	self.helper.setQueue(queue);
+
+	// broadcast playlist changed to all idlers
+	self.idles.forEach(function(client) {
+		client.write('changed: playlist\n');
+	});
+*/
+	// TODO q-stuff
+};
+
+// Receive player state updates from commandRouter and broadcast to all connected clients
+ControllerAlexa.prototype.pushState = function(state, socket) {
+	var self = this;
+    self.logger.info('[' + Date.now() + '] ' + 'ControllerAlexa::pushState');
+/*
+	// if requested by client, respond
+	if (socket) {
+		socket.write(self.helper.printStatus(state));
+		// else broadcast to all idlers
+	} else {
+		// pass state to the helper
+		self.helper.setStatus(state);
+
+		// broadcast state changed to all idlers
+		self.idles.forEach(function(client) {
+			client.write('changed: player\n');
+		});
+	}
+*/
+	// TODO q-stuff
 };

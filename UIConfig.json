@@ -14,7 +14,8 @@
         "data": [
           "username",
           "password",
-          "bitrate"
+			"host",
+			"port"
         ]
       },
       "content": [
@@ -24,7 +25,7 @@
           "element": "input",
           "doc": "This is the hostname of your MQTT account",
           "label": "TRANSLATE.MQTT_HOST",
-          "value": "mqtt://m20.cloudmqtt.com"
+          "value": ""
        },
        {
           "id": "port",
