@@ -1,4 +1,4 @@
-'use strict'; 
+ 'use strict'; 
 
 var libQ = require('kew');
 var libNet = require('net');
@@ -16,26 +16,8 @@ var io=require('socket.io-client');
 
 var socket= io.connect('http://localhost:3000');
 
-/*
-var configFile = path.resolve( startup.get('conf') || '/data/plugins/user-interface/alexa/config.json' );
-nconf.argv().file({ file: configFile })
-
-nconf.defaults({
-  "secure":"false",
-  "username":"oewmlizv",
-  "password":"VwO-mIaRmDXJ",
-  "host":"m20.cloudmqtt.com",
-  "port":"13451",
-  "cid":"clientid",
-  "subtopic":"/alexa",
-  "pubtopic":"/alexa"
-})
-
-*/
-
 
 var syslogMsg ="";
-//Syslog.init("node-syslog", Syslog.LOG_PID | Syslog.LOG_ODELAY, Syslog.LOG_LOCAL0);
 
 
 // Define the ControllerAlexa class
@@ -78,8 +60,8 @@ ControllerAlexa.prototype.onVolumioStart = function()
 	  "host":"m20.cloudmqtt.com",
 	  "port":"13451",
 	  "cid":"clientid",
-	  "subtopic":"/alexa",
-	  "pubtopic":"/alexa"
+	  "subtopic":"/alexa/command",
+	  "pubtopic":"/alexa/response"
 	}) 
 
 	var publish_topic = nconf.get('pubtopic');
@@ -138,7 +120,7 @@ ControllerAlexa.prototype.onVolumioStart = function()
 	  var req = JSON.parse(message);
 		if(req.request.type == "LaunchRequest")
 		{
-			client.publish('/volumio','Hi Master, Your wishes are my command');
+			client.publish(publish_topic,'Hi!');
 		}
 		else if(req.request.intent)
 		{
@@ -164,25 +146,25 @@ ControllerAlexa.prototype.onVolumioStart = function()
 				self.logger.info('alexa: activated ->Play');
 				self.commandRouter.volumioPlay.bind(self.commandRouter);
 				self.commandRouter.volumioPlay();
-				client.publish('/volumio','OK');
+				client.publish(publish_topic,'OK');
 				break;
 			case "Next":
 				self.logger.info('alexa: activated ->Next');
 				self.commandRouter.volumioNext.bind(self.commandRouter);
 				self.commandRouter.volumioNext();
-				client.publish('/volumio','OK');
+				client.publish(publish_topic,'OK');
 				break;
 			case "Stop":
 				self.logger.info('alexa: activated ->Stop');
 				self.commandRouter.volumioStop.bind(self.commandRouter);
 				self.commandRouter.volumioStop();
-				client.publish('/volumio','OK');
+				client.publish(publish_topic,'OK');
 				break;
 			case "Pause":
 				self.logger.info('->pause');
 				self.commandRouter.volumioPause.bind(self.commandRouter);
 				self.commandRouter.volumioPause();
-				client.publish('/volumio','OK');
+				client.publish(publish_topic,'OK');
 				break;
 			case "ListPlaylists":
 				self.logger.info('->list playlists');
@@ -190,7 +172,7 @@ ControllerAlexa.prototype.onVolumioStart = function()
 				var returnedData = self.commandRouter.playListManager.listPlaylist();
 				returnedData.then(function (data) {
 					self.logger.info('alexa: playlist: ', data);
-					client.publish('/volumio','Existing playlist: ' + data);
+					client.publish(publish_topic,'Existing playlist: ' + data);
 				});
 				break;
 			case "VolumeSet":
@@ -200,7 +182,7 @@ ControllerAlexa.prototype.onVolumioStart = function()
 
 				socket.emit('volume', Number(value));
 				
-				client.publish('/volumio','Updated volume to ' + value);	
+				client.publish(publish_topic,'Updated volume to ' + value);	
 				break;
 
 			case "SetPlaylists":
@@ -220,14 +202,14 @@ ControllerAlexa.prototype.onVolumioStart = function()
 						//debugger;
 						var returnedData1 = self.commandRouter.playListManager.playPlaylist(data[found_index]);
 						self.logger.info('playListManager.playPlaylist:  %s ', returnedData1);
-						client.publish('/volumio','OK, setting playlist to; ' + data[found_index]);
+						client.publish(publish_topic,'OK, setting playlist to; ' + data[found_index]);
 					} 
 					else 
 					{
 						//Not in the array
 						returnedData.then(function (data) {
 							self.logger.info('alexa: unknown playlist %s', playlist);
-							client.publish('/volumio','Sorry, This playlist does not exist');
+							client.publish(publish_topic,'Sorry, This playlist does not exist');
 						});
 					}
 				});

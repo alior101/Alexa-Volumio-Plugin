@@ -1,4 +1,4 @@
-# Alexa-Volumio-Plugin
+# Alexa-Volumio-Plugin -- UNDER HEAVY DEVEL, NOT STABLE ENOUGH FOR USE --- 
 
 instructions to add the plugin in manual mode:
 
