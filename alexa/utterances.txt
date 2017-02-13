@@ -1,0 +1,36 @@
+TurnOn Turn on {Device}
+TurnOff Turn off {Device}
+TurnOn to Turn on {Device}
+TurnOff to Turn off {Device}
+Tune {Device} to channel {Channel}
+Tune {Device} channel {Channel}
+Tune set {Device} channel {Channel}
+Tune set {Device} to channel {Channel}
+Tune to set {Device} channel {Channel}
+Tune to set {Device} to channel {Channel}
+VolumeUp {Device} volume up {Repeat}
+VolumeDown {Device} volume down {Repeat}
+VolumeUp to turn {Device} volume up {Repeat}
+VolumeDown to turn {Device} volume down {Repeat}
+VolumeUp turn {Device} volume up {Repeat}
+VolumeDown turn {Device} volume down {Repeat}
+VolumeSet set {Device} volume to {Repeat}
+Mute mute {Device}
+Search search {Musician} 
+Search search {MusicGroup} 
+Search search {MusicAlbum} 
+UnPause unpause {Device}
+Pause pause {Device}
+Play play {Device}
+Seek seek {Device} to {Time}
+Stop stop {Device}
+Next skip {Device}
+Next next {Device}
+Previous previous {Device}
+Previous restart {Device}
+Random random {Device}
+Random shuffle {Device}
+Unrandom order {Device}
+ListPlaylists list playlists on {Device}
+ListPlaylists list playlists
+SetPlaylists set playlist to {Playlist}

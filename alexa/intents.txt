@@ -1,0 +1,207 @@
+{
+  "intents": [
+    {
+      "intent": "TurnOff",
+      "slots": [
+        {
+          "name": "Device",
+          "type": "List_of_devices"
+        }
+      ]
+    },
+    {
+      "intent": "TurnOn",
+      "slots": [
+        {
+          "name": "Device",
+          "type": "List_of_devices"
+        }
+      ]
+    },
+    {
+      "intent": "Tune",
+      "slots": [
+        {
+          "name": "Device",
+          "type": "List_of_devices"
+        },
+        {
+          "name": "Channel",
+          "type": "AMAZON.NUMBER"
+        }
+      ]
+    },
+    {
+      "intent": "VolumeUp",
+      "slots": [
+        {
+          "name": "Device",
+          "type": "List_of_devices"
+        },
+        {
+          "name": "Repeat",
+          "type": "AMAZON.NUMBER"
+        }
+      ]
+    },
+    {
+      "intent": "VolumeSet",
+      "slots": [
+        {
+          "name": "Device",
+          "type": "List_of_devices"
+        },
+        {
+          "name": "Repeat",
+          "type": "AMAZON.NUMBER"
+        }
+      ]
+    },
+    {
+      "intent": "VolumeDown",
+      "slots": [
+        {
+          "name": "Device",
+          "type": "List_of_devices"
+        },
+        {
+          "name": "Repeat",
+          "type": "AMAZON.NUMBER"
+        }
+      ]
+    },
+    {
+      "intent": "Mute",
+      "slots": [
+        {
+          "name": "Device",
+          "type": "List_of_devices"
+        }
+      ]
+    },
+    {
+      "intent": "Pause",
+      "slots": [
+        {
+          "name": "Device",
+          "type": "List_of_devices"
+        }
+      ]
+    },
+    {
+      "intent": "Next",
+      "slots": [
+        {
+          "name": "Device",
+          "type": "List_of_devices"
+        }
+      ]
+    },
+    {
+      "intent": "Previous",
+      "slots": [
+        {
+          "name": "Device",
+          "type": "List_of_devices"
+        }
+      ]
+    },
+    {
+      "intent": "UnPause",
+      "slots": [
+        {
+          "name": "Device",
+          "type": "List_of_devices"
+        }
+      ]
+    },
+    {
+      "intent": "Stop",
+      "slots": [
+        {
+          "name": "Device",
+          "type": "List_of_devices"
+        }
+      ]
+    },
+   {
+      "intent": "Random",
+      "slots": [
+        {
+          "name": "Device",
+          "type": "List_of_devices"
+        }
+      ]
+    },
+   {
+      "intent": "Unrandom",
+      "slots": [
+        {
+          "name": "Device",
+          "type": "List_of_devices"
+        }
+      ]
+    },
+    {
+      "intent": "Play",
+      "slots": [
+        {
+          "name": "Device",
+          "type": "List_of_devices"
+        }
+      ]
+    },
+ 	{
+      "intent": "Seek",
+      "slots": [
+        {
+          "name": "Device",
+          "type": "List_of_devices"
+        },
+        {
+          "name": "Time",
+          "type": "AMAZON.NUMBER"
+        }
+      ]
+    },
+    {
+      "intent": "ListPlaylists",
+      "slots": [
+        {
+          "name": "Device",
+          "type": "List_of_devices"
+        }
+      ]
+    }, 
+    {
+      "intent": "SetPlaylists",
+      "slots": [
+        {
+          "name": "Device",
+          "type": "List_of_devices"
+        },
+        {
+          "name": "Playlist",
+          "type": "AMAZON.MusicPlaylist"
+        }
+      ]
+    },
+    {
+      "intent": "Search",
+      "slots": [
+        {
+          "name": "Musician",
+          "type": "AMAZON.Musician"
+        },
+        {
+          "name": "MusicGroup",
+          "type": "AMAZON.MusicGroup"
+        },
+        {
+          "name": "MusicAlbum",
+          "type": "AMAZON.MusicAlbum"
+        }
+      ]
+    }
+  ]
+}
