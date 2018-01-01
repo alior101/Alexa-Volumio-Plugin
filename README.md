@@ -19,7 +19,7 @@ Alexa, tell home to pause audio.
 Note: this plugin is part of a greater home automation control (for example, my TV is also controlled from the same setup) which explains why I chose MQTT centralized command. There are other IOT modules which sends and receive commands from MQTT.
 
 ## Instructions to add the plugin in manual mode:
-1. Set up alexa and MQTT broker accounts. Cloud MQTT is a free service which is perfect for such low volume messaging. Amazon has a great tutorial on how to setup a skill (https://developer.amazon.com/public/solutions/alexa/alexa-skills-kit/getting-started-guide)
+1. Set up alexa and MQTT broker accounts. Cloud MQTT is a free service which is perfect for such low volume messaging. Amazon has a [great tutorial on how to setup a skill](https://developer.amazon.com/public/solutions/alexa/alexa-skills-kit/getting-started-guide).
 All required configurations for the skill (the voice configuration intents and utterances as well as the lambda function which is being called when alexa is activated are detailed in /alexa dir - just remember to put *your* MQTT user/pass in the `aws_lambda.py` file) 
 
 2. Put all files from repo in /data/plugins/user-interface/alexa/
